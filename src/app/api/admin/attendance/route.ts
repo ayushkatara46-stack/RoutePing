@@ -7,6 +7,8 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { getTodayDate } from '@/lib/utils';
 import { logAuditAction } from '@/lib/audit';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = createServerSupabaseClient();

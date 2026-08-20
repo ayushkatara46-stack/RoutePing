@@ -13,6 +13,8 @@ import {
   getCutoffTime,
 } from '@/lib/attendance';
 import { logAuditAction } from '@/lib/audit';
+
+export const dynamic = 'force-dynamic';
 import { getTodayDate } from '@/lib/utils';
 
 export async function GET() {

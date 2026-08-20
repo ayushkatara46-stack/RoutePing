@@ -7,6 +7,8 @@ import { NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { getDriverRoute, calculateRouteSummary } from '@/lib/route-calculator';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const supabase = createServerSupabaseClient();
