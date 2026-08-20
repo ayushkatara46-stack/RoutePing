@@ -1,7 +1,7 @@
 'use client';
 
 // =============================================
-// StatCard Component
+// StatCard Component — Holographic Glowing Card
 // =============================================
 
 import { type ReactNode } from 'react';
@@ -13,6 +13,7 @@ interface StatCardProps {
   icon?: ReactNode;
   accent?: 'green' | 'red' | 'amber' | 'blue' | 'purple';
   change?: string;
+  subtext?: string;
   className?: string;
 }
 
@@ -22,6 +23,7 @@ export default function StatCard({
   icon,
   accent = 'purple',
   change,
+  subtext,
   className,
 }: StatCardProps) {
   const accentVarMap: Record<string, string> = {
@@ -32,17 +34,36 @@ export default function StatCard({
     purple: 'var(--accent-primary)',
   };
 
+  const accentGlowMap: Record<string, string> = {
+    green: 'var(--accent-green-dim)',
+    red: 'var(--accent-red-dim)',
+    amber: 'var(--accent-amber-dim)',
+    blue: 'var(--accent-blue-dim)',
+    purple: 'var(--accent-primary-dim)',
+  };
+
   return (
     <div
-      className={cn('stat-card', className)}
-      style={{ '--stat-accent': accentVarMap[accent] } as React.CSSProperties}
+      className={cn('stat-card', `stat-card-${accent}`, className)}
+      style={
+        {
+          '--stat-accent': accentVarMap[accent],
+          '--stat-glow': accentGlowMap[accent],
+        } as React.CSSProperties
+      }
     >
-      <div className="stat-card-header">
+      <div className="stat-card-top">
         <span className="stat-label">{label}</span>
-        {icon && <span className="stat-icon">{icon}</span>}
+        {icon && <div className="stat-icon-wrapper">{icon}</div>}
       </div>
       <div className="stat-value">{value}</div>
-      {change && <span className="stat-change">{change}</span>}
+      {(change || subtext) && (
+        <div className="stat-card-footer">
+          {change && <span className="stat-change-pill">{change}</span>}
+          {subtext && <span className="stat-subtext">{subtext}</span>}
+        </div>
+      )}
+      <div className="stat-card-accent-bar" />
     </div>
   );
 }
