@@ -107,7 +107,7 @@ export default function AdminDashboardPage() {
         <StatCard
           label="Total Enrolled"
           value={data.total_students}
-          accent="purple"
+          accent="amber"
           icon={<span className="text-xl">👨‍🎓</span>}
           change="+6 this term"
           subtext="Active student body"
@@ -115,7 +115,7 @@ export default function AdminDashboardPage() {
         <StatCard
           label="Active Fleet"
           value={data.active_buses}
-          accent="blue"
+          accent="amber"
           icon={<span className="text-xl">🚌</span>}
           change="100% operational"
           subtext="On-route GPS synced"
@@ -156,7 +156,7 @@ export default function AdminDashboardPage() {
         <StatCard
           label="Parent Response Rate"
           value={`${responseRate}%`}
-          accent="purple"
+          accent="amber"
           icon={<span className="text-xl">📊</span>}
           change={responseRate > 75 ? '⚡ High Engagement' : 'Normal'}
           subtext="Cutoff: 07:00 AM"
