@@ -2,7 +2,7 @@
 
 // =============================================
 // RouteVisualizer & Live Simulator Component
-// Interactive Animated Route Timeline & Run Simulation
+// Clean & Sleek Route Timeline & Stop Triage
 // =============================================
 
 import { useState, useEffect } from 'react';
@@ -29,7 +29,6 @@ interface RouteVisualizerProps {
   className?: string;
 }
 
-// Fallback demo stops if none provided
 const DEMO_STOPS: VisualStop[] = [
   {
     id: 's1',
@@ -47,7 +46,7 @@ const DEMO_STOPS: VisualStop[] = [
     name: 'Sadar Bazaar Crossing',
     stop_number: 2,
     expected_time: '06:42 AM',
-    address: 'Near Old Clock Tower',
+    address: 'Near Clock Tower',
     students: [
       { id: 'st3', name: 'Priya Sharma', status: 'not_coming' },
     ],
@@ -57,7 +56,7 @@ const DEMO_STOPS: VisualStop[] = [
     name: 'Railway Colony',
     stop_number: 3,
     expected_time: '06:55 AM',
-    address: 'Block B, Railway Quarters',
+    address: 'Block B, Quarters',
     students: [
       { id: 'st4', name: 'Rohan Verma', status: 'coming' },
       { id: 'st5', name: 'Sneha Gupta', status: 'pending' },
@@ -84,10 +83,9 @@ export default function RouteVisualizer({
   const [selectedStop, setSelectedStop] = useState<VisualStop | null>(stops[0] || null);
   const [savedTimeMinutes, setSavedTimeMinutes] = useState<number>(0);
   const [logs, setLogs] = useState<string[]>([
-    '🟢 Route initialized: 3 intermediate stops scheduled',
+    'Route initialized &bull; 3 pickup stops scheduled',
   ]);
 
-  // Auto-step simulation loop
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (isPlaying) {
@@ -96,8 +94,8 @@ export default function RouteVisualizer({
           if (prev >= stops.length - 1) {
             setIsPlaying(false);
             setLogs((l) => [
-              `🏁 ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} — Route Complete! All students delivered safely to School Campus 🎉`,
-              ...l,
+              `🏁 Route Completed — All students arrived at campus safely.`,
+              ...l.slice(0, 3),
             ]);
             return prev;
           }
@@ -105,7 +103,6 @@ export default function RouteVisualizer({
           const nextStop = stops[nextIndex];
           setSelectedStop(nextStop);
 
-          // Calculate if stop was skipped or attended
           const allAbsent =
             nextStop.students.length > 0 &&
             nextStop.students.every((s) => s.status === 'not_coming');
@@ -113,24 +110,24 @@ export default function RouteVisualizer({
           if (allAbsent) {
             setSavedTimeMinutes((m) => m + 5);
             setLogs((l) => [
-              `⚡ SKIP EXECUTED: All students at "${nextStop.name}" are marked ABSENT. Bus saved 5 minutes!`,
-              ...l,
+              `⚡ Stop Skipped: "${nextStop.name}" (All students marked absent) &bull; +5 mins saved`,
+              ...l.slice(0, 3),
             ]);
           } else if (nextIndex === stops.length - 1) {
             setLogs((l) => [
               `🏫 Arrived at Final Stop: ${nextStop.name}`,
-              ...l,
+              ...l.slice(0, 3),
             ]);
           } else {
             setLogs((l) => [
-              `🚌 Arrived at Stop ${nextIndex + 1}: ${nextStop.name} (Picking up ${nextStop.students.filter((s) => s.status === 'coming').length} student(s))`,
-              ...l,
+              `🚌 Arrived at Stop ${nextIndex + 1}: ${nextStop.name}`,
+              ...l.slice(0, 3),
             ]);
           }
 
           return nextIndex;
         });
-      }, 2400);
+      }, 2200);
     }
     return () => clearInterval(timer);
   }, [isPlaying, stops]);
@@ -140,7 +137,7 @@ export default function RouteVisualizer({
     setCurrentStopIndex(0);
     setSelectedStop(stops[0] || null);
     setSavedTimeMinutes(0);
-    setLogs(['🔄 Simulation reset. Ready to start morning route.']);
+    setLogs(['Route ready &bull; Standing by for morning run.']);
   };
 
   const handleNextStep = () => {
@@ -152,25 +149,25 @@ export default function RouteVisualizer({
   };
 
   return (
-    <div className={`route-visualizer-card ${className}`} id="route-visualizer">
-      {/* Top Banner */}
-      <div className="route-viz-header">
-        <div className="route-viz-title-group">
-          <div className="route-live-badge">
+    <div className={`route-card-clean ${className}`} id="route-visualizer">
+      {/* Header */}
+      <div className="route-header-clean">
+        <div className="route-title-clean">
+          <div className="route-pill-live">
             <span className="live-radar-dot" />
-            LIVE ROUTE TRACKER
+            LIVE ROUTE
           </div>
-          <h2 className="route-viz-name">
+          <h3 className="text-base font-bold text-primary flex items-center gap-2">
             <span>🚌</span> {busNumber} &bull; {routeName}
-          </h2>
+          </h3>
         </div>
 
-        {/* Simulation Controls */}
-        <div className="route-viz-controls">
-          <div className="saved-time-badge">
-            <span className="saved-time-icon">⚡</span>
-            <span>Saved: <strong>{savedTimeMinutes} mins</strong></span>
-          </div>
+        <div className="route-actions-clean">
+          {savedTimeMinutes > 0 && (
+            <div className="saved-pill-clean">
+              <span>⚡ Saved: <strong>{savedTimeMinutes} mins</strong></span>
+            </div>
+          )}
 
           <Button
             size="sm"
@@ -178,7 +175,7 @@ export default function RouteVisualizer({
             onClick={() => setIsPlaying(!isPlaying)}
             id="sim-play-toggle"
           >
-            {isPlaying ? '⏸️ Pause Sim' : '▶️ Play Simulation'}
+            {isPlaying ? '⏸ Pause' : '▶ Play Sim'}
           </Button>
 
           <Button
@@ -187,7 +184,7 @@ export default function RouteVisualizer({
             onClick={handleNextStep}
             disabled={currentStopIndex >= stops.length - 1 || isPlaying}
           >
-            ⏭️ Next
+            ⏭ Next
           </Button>
 
           <Button size="sm" variant="secondary" onClick={handleReset}>
@@ -196,61 +193,57 @@ export default function RouteVisualizer({
         </div>
       </div>
 
-      {/* Visual Timeline Path */}
-      <div className="route-timeline-container">
-        {/* Progress Fill Bar */}
-        <div className="route-timeline-track">
+      {/* Timeline Section */}
+      <div className="route-timeline-clean">
+        {/* Track Bar (Centered with nodes) */}
+        <div className="timeline-track-bar">
           <div
-            className="route-timeline-progress"
+            className="timeline-track-fill"
             style={{
               width: `${(currentStopIndex / (stops.length - 1)) * 100}%`,
             }}
           />
         </div>
 
-        {/* Stops on Track */}
-        <div className="route-stops-grid">
+        {/* Nodes Grid */}
+        <div className="timeline-nodes-row">
           {stops.map((stop, idx) => {
             const isCurrent = idx === currentStopIndex;
             const isPassed = idx < currentStopIndex;
             const allAbsent =
               stop.students.length > 0 &&
               stop.students.every((s) => s.status === 'not_coming');
-            const hasPending = stop.students.some(
-              (s) => s.status === 'pending' || s.status === 'no_response'
-            );
+            const isSelected = selectedStop?.id === stop.id;
 
-            let nodeClass = 'stop-node';
-            let statusLabel = 'Active';
-            let badgeVariant: 'green' | 'red' | 'amber' | 'blue' = 'blue';
+            let nodeStateClass = 'node-upcoming';
+            let badgeText = `${stop.students.filter((s) => s.status === 'coming').length} Coming`;
+            let badgeVariant: 'green' | 'red' | 'amber' | 'blue' = 'green';
 
-            if (isCurrent) nodeClass += ' stop-node-current';
-            if (isPassed) nodeClass += ' stop-node-passed';
+            if (isCurrent) {
+              nodeStateClass = 'node-active';
+            } else if (isPassed) {
+              nodeStateClass = 'node-completed';
+            }
 
             if (allAbsent) {
-              nodeClass += ' stop-node-skipped';
-              statusLabel = 'Skip';
+              badgeText = 'Skip (Absent)';
               badgeVariant = 'red';
-            } else if (hasPending) {
-              statusLabel = 'Pending';
-              badgeVariant = 'amber';
+              if (!isPassed && !isCurrent) nodeStateClass = 'node-skipped';
             } else if (idx === stops.length - 1) {
-              statusLabel = 'School';
-              badgeVariant = 'green';
-            } else {
-              statusLabel = `${stop.students.filter((s) => s.status === 'coming').length} Coming`;
-              badgeVariant = 'green';
+              badgeText = 'Campus';
+              badgeVariant = 'blue';
             }
 
             return (
               <div
                 key={stop.id}
-                className={`stop-item ${selectedStop?.id === stop.id ? 'stop-item-selected' : ''}`}
+                className={`timeline-stop-col ${isSelected ? 'timeline-stop-selected' : ''}`}
                 onClick={() => setSelectedStop(stop)}
               >
-                <div className={nodeClass}>
+                {/* Circle Node */}
+                <div className={`timeline-circle-node ${nodeStateClass}`}>
                   {isCurrent ? (
-                    <span className="bus-marker-icon">🚌</span>
+                    <span className="text-base">🚌</span>
                   ) : isPassed ? (
                     '✓'
                   ) : allAbsent ? (
@@ -260,12 +253,13 @@ export default function RouteVisualizer({
                   )}
                 </div>
 
-                <div className="stop-info-text">
-                  <div className="stop-name-header">{stop.name}</div>
-                  <div className="stop-eta-sub">{stop.expected_time}</div>
-                  <div className="mt-1">
+                {/* Stop Label info below */}
+                <div className="timeline-stop-details">
+                  <div className="timeline-stop-title">{stop.name}</div>
+                  <div className="timeline-stop-time">{stop.expected_time}</div>
+                  <div className="mt-1.5">
                     <Badge variant={badgeVariant} size="sm">
-                      {statusLabel}
+                      {badgeText}
                     </Badge>
                   </div>
                 </div>
@@ -275,54 +269,41 @@ export default function RouteVisualizer({
         </div>
       </div>
 
-      {/* Detail Inspector Drawer */}
-      <div className="route-inspector-panel">
-        {selectedStop ? (
-          <div className="inspector-content">
-            <div className="inspector-left">
-              <span className="inspector-label">SELECTED STOP</span>
-              <h3 className="inspector-stop-title">
-                Stop #{selectedStop.stop_number}: {selectedStop.name}
-              </h3>
-              <p className="inspector-address text-secondary text-xs">
-                📍 {selectedStop.address || 'Standard Pickup Point'} &bull; ETA: {selectedStop.expected_time}
-              </p>
+      {/* Detail Footer */}
+      <div className="route-footer-clean">
+        {selectedStop && (
+          <div className="footer-stop-info">
+            <div className="text-xs font-semibold text-secondary uppercase tracking-wider mb-1">
+              Stop Details &bull; #{selectedStop.stop_number}
             </div>
-
-            <div className="inspector-students-list">
-              <span className="inspector-label">
-                STUDENTS AT THIS STOP ({selectedStop.students.length})
-              </span>
+            <div className="text-sm font-bold text-primary mb-1">
+              {selectedStop.name} <span className="text-xs text-secondary font-normal">({selectedStop.address})</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5 mt-2">
               {selectedStop.students.length === 0 ? (
-                <span className="text-xs text-secondary">Final school gate drop-off point</span>
+                <span className="text-xs text-secondary">Final Drop-off Destination</span>
               ) : (
-                <div className="students-pill-row">
-                  {selectedStop.students.map((st) => (
-                    <span
-                      key={st.id}
-                      className={`student-pill student-pill-${st.status}`}
-                    >
-                      {st.status === 'coming' && '🟢'}
-                      {st.status === 'not_coming' && '🔴'}
-                      {st.status === 'pending' && '⏳'}
-                      {st.name} ({st.status.replace('_', ' ')})
-                    </span>
-                  ))}
-                </div>
+                selectedStop.students.map((st) => (
+                  <span
+                    key={st.id}
+                    className={`student-chip-clean student-chip-${st.status}`}
+                  >
+                    {st.status === 'coming' ? '✓' : st.status === 'not_coming' ? '✕' : '⏳'}{' '}
+                    {st.name}
+                  </span>
+                ))
               )}
             </div>
           </div>
-        ) : null}
+        )}
 
-        {/* Live Event Stream */}
-        <div className="live-event-feed">
-          <div className="feed-header">
-            <span className="live-radar-dot" />
-            <span className="text-xs font-semibold text-secondary">REAL-TIME ROUTE LOGS</span>
+        <div className="footer-logs-clean">
+          <div className="text-xs font-semibold text-secondary uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+            <span className="live-radar-dot" /> Live Route Events
           </div>
-          <div className="feed-list">
-            {logs.slice(0, 3).map((log, i) => (
-              <div key={i} className="feed-item">
+          <div className="space-y-1">
+            {logs.slice(0, 2).map((log, i) => (
+              <div key={i} className="text-xs text-secondary bg-black/20 px-2.5 py-1 rounded border border-white/5">
                 {log}
               </div>
             ))}

@@ -1,7 +1,7 @@
 'use client';
 
 // =============================================
-// StatCard Component — Holographic Glowing Card
+// StatCard Component — Clean Minimalist Metric
 // =============================================
 
 import { type ReactNode } from 'react';
@@ -21,49 +21,26 @@ export default function StatCard({
   label,
   value,
   icon,
-  accent = 'purple',
+  accent = 'amber',
   change,
   subtext,
   className,
 }: StatCardProps) {
-  const accentVarMap: Record<string, string> = {
-    green: 'var(--accent-green)',
-    red: 'var(--accent-red)',
-    amber: 'var(--accent-amber)',
-    blue: 'var(--accent-blue)',
-    purple: 'var(--accent-primary)',
-  };
-
-  const accentGlowMap: Record<string, string> = {
-    green: 'var(--accent-green-dim)',
-    red: 'var(--accent-red-dim)',
-    amber: 'var(--accent-amber-dim)',
-    blue: 'var(--accent-blue-dim)',
-    purple: 'var(--accent-primary-dim)',
-  };
-
   return (
-    <div
-      className={cn('stat-card', `stat-card-${accent}`, className)}
-      style={
-        {
-          '--stat-accent': accentVarMap[accent],
-          '--stat-glow': accentGlowMap[accent],
-        } as React.CSSProperties
-      }
-    >
-      <div className="stat-card-top">
-        <span className="stat-label">{label}</span>
-        {icon && <div className="stat-icon-wrapper">{icon}</div>}
+    <div className={cn('stat-card-clean', `stat-accent-${accent}`, className)}>
+      <div className="stat-clean-header">
+        <span className="stat-clean-label">{label}</span>
+        {icon && <div className="stat-clean-icon">{icon}</div>}
       </div>
-      <div className="stat-value">{value}</div>
+
+      <div className="stat-clean-value">{value}</div>
+
       {(change || subtext) && (
-        <div className="stat-card-footer">
-          {change && <span className="stat-change-pill">{change}</span>}
-          {subtext && <span className="stat-subtext">{subtext}</span>}
+        <div className="stat-clean-footer">
+          {change && <span className="stat-clean-badge">{change}</span>}
+          {subtext && <span className="stat-clean-subtext">{subtext}</span>}
         </div>
       )}
-      <div className="stat-card-accent-bar" />
     </div>
   );
 }
