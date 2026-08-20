@@ -30,7 +30,10 @@ export function useAttendance(): UseAttendanceReturn {
   const supabase = createClient();
 
   const fetchData = useCallback(async () => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);

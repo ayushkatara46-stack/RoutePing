@@ -1,7 +1,7 @@
 'use client';
 
 // =============================================
-// Root Page — Redirect to role dashboard
+// Root Page — Redirect to role dashboard or login
 // =============================================
 
 import { useEffect } from 'react';
@@ -11,15 +11,19 @@ import { ROLE_DASHBOARDS } from '@/lib/constants';
 import { PageLoader } from '@/components/ui/Spinner';
 
 export default function HomePage() {
-  const { profile, loading } = useAuthContext();
+  const { profile, loading, user } = useAuthContext();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && profile) {
-      const dashboard = ROLE_DASHBOARDS[profile.role] || '/dashboard';
-      router.replace(dashboard);
+    if (!loading) {
+      if (profile) {
+        const dashboard = ROLE_DASHBOARDS[profile.role] || '/admin';
+        router.replace(dashboard);
+      } else if (!user) {
+        router.replace('/login');
+      }
     }
-  }, [profile, loading, router]);
+  }, [profile, user, loading, router]);
 
   return <PageLoader message="Loading your dashboard..." />;
 }
