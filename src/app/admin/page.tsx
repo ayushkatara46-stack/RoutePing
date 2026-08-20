@@ -66,39 +66,41 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="admin-dashboard space-y-6" id="admin-dashboard">
-      {/* Top Welcome & Quick Actions Bar */}
-      <div className="admin-hero-banner">
-        <div className="hero-left">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="live-radar-dot" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-green-400">
-              Operations Active &bull; Morning Shift
-            </span>
+      {/* Top Artisan Hero Banner matching reference aesthetic */}
+      <div className="artisan-hero-banner">
+        <div className="artisan-hero-content">
+          <div className="artisan-hero-emblem">
+            <span className="emblem-line" />
+            <span className="emblem-icon">🚌</span>
+            <span className="emblem-line" />
           </div>
-          <h1 className="hero-heading">Fleet Command Center</h1>
-          <p className="text-secondary text-sm">
-            Live real-time monitoring of bus routes, parent responses, and stop optimizations.
+
+          <h1 className="artisan-hero-title">SAFE • REAL-TIME • ON-TIME</h1>
+          <p className="artisan-hero-subtitle">
+            Smart school bus attendance, live driver dispatch &amp; dynamic route optimization.
           </p>
-        </div>
 
-        <div className="hero-actions">
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleBroadcast}
-            disabled={broadcastSent}
-            id="broadcast-reminder-btn"
-          >
-            {broadcastSent ? '✓ Reminder Sent' : '📢 Broadcast 7AM Reminder'}
-          </Button>
+          <div className="artisan-hero-actions">
+            <Button
+              variant="primary"
+              size="md"
+              onClick={handleBroadcast}
+              disabled={broadcastSent}
+              id="broadcast-reminder-btn"
+              className="artisan-cta-btn"
+            >
+              {broadcastSent ? '✓ Reminder Broadcasted' : '📢 Broadcast 7AM Reminder'}
+            </Button>
 
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => window.print()}
-          >
-            📄 Export Roster
-          </Button>
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => window.print()}
+              className="artisan-secondary-btn"
+            >
+              📄 Export Roster
+            </Button>
+          </div>
         </div>
       </div>
 
