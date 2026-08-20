@@ -59,7 +59,7 @@ export default function NotificationBell() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, supabase]);
+  }, [user?.id]);
 
   const markAsRead = async (id: string) => {
     await supabase

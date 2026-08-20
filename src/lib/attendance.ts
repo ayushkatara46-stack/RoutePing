@@ -88,16 +88,8 @@ export async function updateAttendanceStatus(
 /**
  * Check if current time is before the configured cutoff
  */
-export async function isBeforeCutoff(): Promise<boolean> {
-  const supabase = createServerSupabaseClient();
-
-  const { data } = await supabase
-    .from('system_settings')
-    .select('value')
-    .eq('key', 'cutoff_time')
-    .single();
-
-  const cutoffTime = data?.value ? String(data.value).replace(/"/g, '') : '07:00';
+export async function isBeforeCutoff(providedCutoffTime?: string): Promise<boolean> {
+  const cutoffTime = providedCutoffTime || (await getCutoffTime());
   const [cutH, cutM] = cutoffTime.split(':').map(Number);
   const now = new Date();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();

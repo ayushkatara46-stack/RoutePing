@@ -31,23 +31,28 @@ export async function GET() {
 
     const today = getTodayDate();
 
-    // Get user's students with related data
-    const { data: students } = await supabase
-      .from('students')
-      .select(
-        `*,
-        bus:buses(*),
-        route:routes(*),
-        stop:stops(*),
-        attendance:attendance(*)` 
-      )
-      .eq('parent_id', user.id)
-      .eq('active', true);
+    // Fetch students and cutoff time in parallel
+    const [{ data: students }, cutoffTime] = await Promise.all([
+      supabase
+        .from('students')
+        .select(
+          `*,
+          bus:buses(*),
+          route:routes(*),
+          stop:stops(*),
+          attendance:attendance(*)`
+        )
+        .eq('parent_id', user.id)
+        .eq('active', true),
+      getCutoffTime(),
+    ]);
 
-    if (!students) {
+    const beforeCutoff = await isBeforeCutoff(cutoffTime);
+
+    if (!students || students.length === 0) {
       return NextResponse.json({
         success: true,
-        data: { students: [], cutoff_time: '07:00', is_before_cutoff: true },
+        data: { students: [], cutoff_time: cutoffTime, is_before_cutoff: beforeCutoff },
       });
     }
 
@@ -60,7 +65,7 @@ export async function GET() {
         );
 
         if (!todayAttendance) {
-          todayAttendance = (await getOrCreateTodayAttendance(student.id)) as Record<string, unknown> | null || undefined;
+          todayAttendance = ((await getOrCreateTodayAttendance(student.id)) as Record<string, unknown> | null) || undefined;
         }
 
         return {
@@ -69,9 +74,6 @@ export async function GET() {
         };
       })
     );
-
-    const cutoffTime = await getCutoffTime();
-    const beforeCutoff = await isBeforeCutoff();
 
     return NextResponse.json({
       success: true,

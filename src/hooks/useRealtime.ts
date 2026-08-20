@@ -26,14 +26,16 @@ export function useRealtime({
   enabled = true,
 }: UseRealtimeOptions) {
   const channelRef = useRef<RealtimeChannel | null>(null);
-  const supabase = createClient();
+  const onPayloadRef = useRef(onPayload);
+  onPayloadRef.current = onPayload;
 
   const cleanup = useCallback(() => {
     if (channelRef.current) {
+      const supabase = createClient();
       supabase.removeChannel(channelRef.current);
       channelRef.current = null;
     }
-  }, [supabase]);
+  }, []);
 
   useEffect(() => {
     if (!enabled) {
@@ -41,6 +43,7 @@ export function useRealtime({
       return;
     }
 
+    const supabase = createClient();
     const channelName = `realtime-${table}-${event}-${filter || 'all'}`;
 
     const channel = supabase
@@ -54,7 +57,7 @@ export function useRealtime({
           ...(filter ? { filter } : {}),
         },
         (payload) => {
-          onPayload(payload as { new: Record<string, unknown>; old: Record<string, unknown> });
+          onPayloadRef.current(payload as { new: Record<string, unknown>; old: Record<string, unknown> });
         }
       )
       .subscribe();
@@ -62,7 +65,7 @@ export function useRealtime({
     channelRef.current = channel;
 
     return cleanup;
-  }, [table, schema, event, filter, enabled, supabase, onPayload, cleanup]);
+  }, [table, schema, event, filter, enabled, cleanup]);
 }
 
 export default useRealtime;

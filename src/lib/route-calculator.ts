@@ -69,23 +69,21 @@ export async function getDriverRoute(
 
   if (!bus || !bus.route) return null;
 
-  // Get all stops for this route, ordered
-  const { data: stops } = await supabase
-    .from('stops')
-    .select('*')
-    .eq('route_id', bus.route_id)
-    .order('stop_number', { ascending: true });
+  // Get all stops and students in parallel
+  const [{ data: stops }, { data: students }] = await Promise.all([
+    supabase
+      .from('stops')
+      .select('*')
+      .eq('route_id', bus.route_id)
+      .order('stop_number', { ascending: true }),
+    supabase
+      .from('students')
+      .select(`*, attendance:attendance(*)`)
+      .eq('route_id', bus.route_id)
+      .eq('active', true),
+  ]);
 
   if (!stops) return null;
-
-  // Get all students on this route with their attendance
-  const { data: students } = await supabase
-    .from('students')
-    .select(
-      `*, attendance:attendance(*)` 
-    )
-    .eq('route_id', bus.route_id)
-    .eq('active', true);
 
   // Build stops with students and states
   const stopsWithStudents: StopWithStudents[] = stops.map((stop) => {

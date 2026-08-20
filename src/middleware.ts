@@ -5,10 +5,17 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-// Routes that don't require authentication
-const PUBLIC_ROUTES = ['/login', '/api/auth'];
+// Routes that don't require page authentication
+const PUBLIC_ROUTES = ['/login', '/manifest.json'];
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Let API routes handle their own auth checks to avoid double remote roundtrips
+  if (pathname.startsWith('/api')) {
+    return NextResponse.next();
+  }
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -19,7 +26,6 @@ export async function middleware(request: NextRequest) {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    // Pass through if Supabase credentials are not yet configured in .env.local
     return response;
   }
 
@@ -53,14 +59,11 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Refresh session
+  // Check auth session
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { pathname } = request.nextUrl;
-
-  // Check if the route is public
   const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
 
   // Redirect unauthenticated users to login
