@@ -1,8 +1,8 @@
 'use client';
 
 // =============================================
-// Sidebar Component — Freeform Draggable & Resizable
-// Drag freely to size however much you want!
+// Sidebar Component — Clean Draggable Resizer
+// Sleek Border Resizing without Bulky Arrow Buttons
 // =============================================
 
 import Link from 'next/link';
@@ -14,8 +14,7 @@ import { useSidebar } from '@/context/SidebarContext';
 export default function Sidebar() {
   const pathname = usePathname();
   const items = NAV_ITEMS.admin;
-  const { width, collapsed, isDragging, toggleSidebar, startDragging } =
-    useSidebar();
+  const { width, collapsed, isDragging, startDragging } = useSidebar();
 
   return (
     <aside
@@ -28,36 +27,13 @@ export default function Sidebar() {
       aria-label="Admin Navigation"
       style={{ width: `${width}px` }}
     >
-      {/* Full-height Draggable Edge Resizer Bar */}
+      {/* Full-height Clean Draggable Edge Resizer Bar */}
       <div
         className="sidebar-resizer-line"
         onMouseDown={startDragging}
         onTouchStart={startDragging}
-        title="Drag left/right to resize sidebar, or click handle"
-      >
-        {/* Floating Tactile Pill Grip & Toggle Handle */}
-        <button
-          className="sidebar-edge-handle"
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleSidebar();
-          }}
-          onMouseDown={(e) => {
-            // If user starts dragging on the button, allow drag
-            startDragging(e);
-          }}
-          title={
-            collapsed
-              ? 'Click to Open (▶) or Drag to Resize'
-              : 'Click to Close (◀) or Drag to Resize'
-          }
-          aria-label="Toggle or Drag Sidebar"
-          id="sidebar-edge-slide-btn"
-        >
-          <span className="edge-chevron">{collapsed ? '▶' : '◀'}</span>
-          <span className="edge-drag-dots">⋮</span>
-        </button>
-      </div>
+        title="Drag left/right to resize sidebar"
+      />
 
       {/* Floating Width Indicator while dragging */}
       {isDragging && (

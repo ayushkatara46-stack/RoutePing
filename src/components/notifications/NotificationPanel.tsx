@@ -2,11 +2,10 @@
 
 // =============================================
 // Notification Panel Component — Liquid Glass
-// With Draggable Left Edge Resizer, Close Handle,
-// and Freeform Width Sizing
+// Clean Border Resizing without Bulky Arrow Buttons
 // =============================================
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { formatTimestamp } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 import type { Notification } from '@/types';
@@ -40,8 +39,6 @@ export default function NotificationPanel({
   const unreadCount = notifications.filter((n) => !n.read).length;
   const [width, setWidth] = useState<number>(DEFAULT_WIDTH);
   const [isDragging, setIsDragging] = useState<boolean>(false);
-  const startXRef = useRef<number>(0);
-  const startWidthRef = useRef<number>(DEFAULT_WIDTH);
 
   // Load saved width
   useEffect(() => {
@@ -63,7 +60,6 @@ export default function NotificationPanel({
     if (!isDragging) return;
 
     const handleMouseMove = (e: MouseEvent) => {
-      // Since panel is pinned to right (right: 0), moving mouse LEFT increases width:
       const newWidth = window.innerWidth - e.clientX;
       if (newWidth < SNAP_CLOSE_THRESHOLD) {
         onClose();
@@ -145,31 +141,13 @@ export default function NotificationPanel({
         aria-label="Notifications Panel"
         style={{ width: `${width}px` }}
       >
-        {/* Full-height Draggable Left Resizer Line */}
+        {/* Full-height Clean Draggable Left Resizer Line */}
         <div
           className="notification-resizer-line"
           onMouseDown={startDragging}
           onTouchStart={startDragging}
           title="Drag left/right to resize notifications panel"
-        >
-          {/* Floating Tactile Pill Grip & Close Handle on the left divider border */}
-          <button
-            className="notification-edge-handle"
-            onClick={(e) => {
-              e.stopPropagation();
-              onClose();
-            }}
-            onMouseDown={(e) => {
-              startDragging(e);
-            }}
-            title="Click to Close (▶) or Drag to Resize"
-            aria-label="Toggle or Resize Notifications"
-            id="notification-edge-slide-btn"
-          >
-            <span className="edge-drag-dots">⋮</span>
-            <span className="edge-chevron">▶</span>
-          </button>
-        </div>
+        />
 
         {/* Floating Width Tooltip while dragging */}
         {isDragging && (
@@ -201,7 +179,7 @@ export default function NotificationPanel({
               </button>
             )}
 
-            {/* Close Button (✕) */}
+            {/* Clean Close Button (✕) */}
             <button
               className="liquid-close-btn"
               onClick={onClose}
