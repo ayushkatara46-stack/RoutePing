@@ -1,9 +1,9 @@
 'use client';
 
 // =============================================
-// Admin Vertical Route Studio & Interactive Visualizer
-// View routes in vertical metro timeline, add custom routes
-// with dynamic stops, and run real-time dispatch simulation
+// Admin Vertical Route Architecture Studio
+// Display all routes vertically with full stop metrics,
+// interactive stop-by-stop sequencing, and custom builder
 // =============================================
 
 import { useState, useEffect, useCallback } from 'react';
@@ -18,8 +18,8 @@ import { cn } from '@/lib/utils';
 interface Student {
   id: string;
   name: string;
-  class: string;
-  section: string;
+  class?: string;
+  section?: string;
 }
 
 interface Stop {
@@ -28,7 +28,7 @@ interface Stop {
   name: string;
   address: string | null;
   stop_number: number;
-  scheduled_time: string | null;
+  expected_time: string | null;
   students?: Student[];
 }
 
@@ -42,13 +42,12 @@ interface RouteItem {
 
 export default function AdminRoutesPage() {
   const [routes, setRoutes] = useState<RouteItem[]>([]);
-  const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [filterRouteId, setFilterRouteId] = useState<string>('all');
 
-  // Simulation State
-  const [currentStopIndex, setCurrentStopIndex] = useState<number>(0);
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [logs, setLogs] = useState<string[]>([]);
+  // Simulation State per route
+  const [activeSimRouteId, setActiveSimRouteId] = useState<string | null>(null);
+  const [simStopIndex, setSimStopIndex] = useState<number>(0);
 
   // Create Route Modal State
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -58,20 +57,20 @@ export default function AdminRoutesPage() {
     active: true,
   });
   const [dynamicStops, setDynamicStops] = useState<
-    Array<{ name: string; address: string; scheduled_time: string }>
+    Array<{ name: string; address: string; expected_time: string }>
   >([
-    { name: 'Civil Lines Crossing', address: 'Main Gate #1', scheduled_time: '06:30 AM' },
-    { name: 'Sadar Bazaar Point', address: 'Near Post Office', scheduled_time: '06:45 AM' },
+    { name: 'Civil Lines Gate', address: 'Main Gate #1', expected_time: '06:30 AM' },
+    { name: 'Sadar Bazaar Crossing', address: 'Near Clock Tower', expected_time: '06:45 AM' },
   ]);
   const [savingRoute, setSavingRoute] = useState(false);
 
   // Add Single Stop Modal State
   const [addStopModalOpen, setAddStopModalOpen] = useState(false);
+  const [targetRouteId, setTargetRouteId] = useState<string | null>(null);
   const [stopForm, setStopForm] = useState({
     name: '',
     address: '',
-    scheduled_time: '07:00 AM',
-    stop_number: 1,
+    expected_time: '07:00 AM',
   });
   const [savingStop, setSavingStop] = useState(false);
 
@@ -83,61 +82,40 @@ export default function AdminRoutesPage() {
       const json = await res.json();
       if (json.success && json.data) {
         setRoutes(json.data);
-        if (json.data.length > 0 && !selectedRouteId) {
-          setSelectedRouteId(json.data[0].id);
-        }
       }
     } catch {
       toast.error('Failed to load routes');
     } finally {
       setLoading(false);
     }
-  }, [selectedRouteId, toast]);
+  }, [toast]);
 
   useEffect(() => {
     fetchRoutes();
   }, [fetchRoutes]);
 
-  const activeRoute = routes.find((r) => r.id === selectedRouteId) || routes[0];
-  const stops = activeRoute?.stops || [];
-
-  // Reset simulation when route changes
-  useEffect(() => {
-    setCurrentStopIndex(0);
-    setIsPlaying(false);
-    if (activeRoute) {
-      setLogs([
-        `🚌 Route "${activeRoute.name}" loaded with ${stops.length} vertical stops.`,
-      ]);
-    }
-  }, [selectedRouteId, activeRoute, stops.length]);
-
   // Simulation Timer
   useEffect(() => {
     let timer: NodeJS.Timeout;
-    if (isPlaying && stops.length > 0) {
-      timer = setInterval(() => {
-        setCurrentStopIndex((prev) => {
-          if (prev >= stops.length - 1) {
-            setIsPlaying(false);
-            setLogs((l) => [
-              `🏁 Route Completed! Bus reached final destination at ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
-              ...l.slice(0, 9),
-            ]);
-            return prev;
-          }
-          const nextIndex = prev + 1;
-          const nextStop = stops[nextIndex];
-          setLogs((l) => [
-            `🚏 Bus reached Stop #${nextIndex + 1}: ${nextStop.name} (${nextStop.scheduled_time || 'On Time'})`,
-            ...l.slice(0, 9),
-          ]);
-          return nextIndex;
-        });
-      }, 2500);
+    if (activeSimRouteId) {
+      const simRoute = routes.find((r) => r.id === activeSimRouteId);
+      const stopsCount = simRoute?.stops?.length || 0;
+
+      if (stopsCount > 0) {
+        timer = setInterval(() => {
+          setSimStopIndex((prev) => {
+            if (prev >= stopsCount - 1) {
+              setActiveSimRouteId(null);
+              toast.success(`Route "${simRoute?.name}" reached final destination! 🏁`);
+              return 0;
+            }
+            return prev + 1;
+          });
+        }, 2200);
+      }
     }
     return () => clearInterval(timer);
-  }, [isPlaying, stops]);
+  }, [activeSimRouteId, routes, toast]);
 
   // Handle Create Route with Initial Dynamic Stops
   const handleCreateRoute = async () => {
@@ -161,11 +139,10 @@ export default function AdminRoutesPage() {
         setCreateModalOpen(false);
         setRouteForm({ name: '', description: '', active: true });
         setDynamicStops([
-          { name: 'First Pickup Point', address: '', scheduled_time: '06:30 AM' },
-          { name: 'Second Pickup Point', address: '', scheduled_time: '06:45 AM' },
+          { name: 'First Pickup Point', address: '', expected_time: '06:30 AM' },
+          { name: 'Second Pickup Point', address: '', expected_time: '06:45 AM' },
         ]);
-        await fetchRoutes();
-        if (json.data?.id) setSelectedRouteId(json.data.id);
+        fetchRoutes();
       } else {
         toast.error(json.error || 'Failed to create route');
       }
@@ -176,34 +153,34 @@ export default function AdminRoutesPage() {
     }
   };
 
-  // Handle Add Single Stop to Active Route
+  // Handle Add Single Stop to a specific route
   const handleAddStop = async () => {
-    if (!stopForm.name.trim() || !activeRoute) {
+    if (!stopForm.name.trim() || !targetRouteId) {
       toast.error('Stop name is required');
       return;
     }
+    const targetRoute = routes.find((r) => r.id === targetRouteId);
     setSavingStop(true);
     try {
       const res = await fetch('/api/admin/stops', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          route_id: activeRoute.id,
+          route_id: targetRouteId,
           name: stopForm.name,
           address: stopForm.address,
-          scheduled_time: stopForm.scheduled_time,
-          stop_number: stops.length + 1,
+          expected_time: stopForm.expected_time,
+          stop_number: (targetRoute?.stops?.length || 0) + 1,
         }),
       });
       const json = await res.json();
       if (json.success) {
-        toast.success(`Stop "${stopForm.name}" added to route!`);
+        toast.success(`Stop "${stopForm.name}" added!`);
         setAddStopModalOpen(false);
         setStopForm({
           name: '',
           address: '',
-          scheduled_time: '07:00 AM',
-          stop_number: stops.length + 2,
+          expected_time: '07:00 AM',
         });
         fetchRoutes();
       } else {
@@ -240,7 +217,6 @@ export default function AdminRoutesPage() {
       const json = await res.json();
       if (json.success) {
         toast.success(`Route "${routeName}" deleted`);
-        setSelectedRouteId(null);
         fetchRoutes();
       }
     } catch {
@@ -248,50 +224,115 @@ export default function AdminRoutesPage() {
     }
   };
 
-  if (loading) return <PageLoader message="Loading route architecture studio..." />;
+  if (loading) return <PageLoader message="Loading vertical route architecture studio..." />;
 
-  const totalStudentsInRoute = stops.reduce(
-    (acc, st) => acc + (st.students?.length || 0),
+  const displayedRoutes =
+    filterRouteId === 'all'
+      ? routes
+      : routes.filter((r) => r.id === filterRouteId);
+
+  const totalAllStops = routes.reduce((acc, r) => acc + (r.stops?.length || 0), 0);
+  const totalAllStudents = routes.reduce(
+    (acc, r) =>
+      acc +
+      (r.stops || []).reduce((sAcc, s) => sAcc + (s.students?.length || 0), 0),
     0
   );
 
   return (
-    <div id="admin-routes" className="routes-studio-container">
-      {/* Studio Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-black tracking-wide text-primary flex items-center gap-2">
-            🗺️ Vertical Route Architecture Studio
-          </h1>
-          <p className="text-xs text-secondary mt-1">
-            Visual vertical stop-by-stop sequencing, dispatch simulation, and real-time student mapping.
-          </p>
+    <div id="admin-routes" className="routes-studio-container space-y-6">
+      {/* Top Studio Hero Banner */}
+      <div className="admin-hero-banner">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div className="hero-badge-pill">
+              <span className="live-radar-dot" />
+              ROUTE ARCHITECTURE STUDIO
+            </div>
+            <h1 className="hero-headline mt-2">
+              VERTICAL ROUTE &amp; DISPATCH CONTROL
+            </h1>
+            <p className="hero-subtext mt-1">
+              Real-time vertical metro maps, stop-by-stop telemetry, and custom route sequencing.
+            </p>
+          </div>
+
+          <Button
+            variant="primary"
+            onClick={() => setCreateModalOpen(true)}
+            className="shadow-honey flex-shrink-0"
+            id="create-new-route-btn"
+          >
+            ✨ + Create New Route
+          </Button>
         </div>
 
-        <Button
-          variant="primary"
-          onClick={() => setCreateModalOpen(true)}
-          className="shadow-honey"
-          id="create-new-route-btn"
-        >
-          ✨ + Create New Route
-        </Button>
+        {/* Global Route Metrics Pills */}
+        <div className="grid grid-3 gap-3 mt-6 pt-4 border-t border-white/10">
+          <div className="flex items-center gap-3 bg-black/25 px-4 py-2.5 rounded-lg border border-white/5">
+            <span className="text-2xl">🗺️</span>
+            <div>
+              <div className="text-[10px] text-secondary font-bold uppercase tracking-wider">
+                Total Routes
+              </div>
+              <div className="text-base font-black text-primary">
+                {routes.length} Active Corridors
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 bg-black/25 px-4 py-2.5 rounded-lg border border-white/5">
+            <span className="text-2xl">🚏</span>
+            <div>
+              <div className="text-[10px] text-secondary font-bold uppercase tracking-wider">
+                Total Stops
+              </div>
+              <div className="text-base font-black text-primary">
+                {totalAllStops} Mapped Stops
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 bg-black/25 px-4 py-2.5 rounded-lg border border-white/5">
+            <span className="text-2xl">👨‍🎓</span>
+            <div>
+              <div className="text-[10px] text-secondary font-bold uppercase tracking-wider">
+                Assigned Students
+              </div>
+              <div className="text-base font-black text-accent">
+                {totalAllStudents} Enrolled Riders
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Route Switcher Tabs */}
-      <div className="route-switcher-bar mb-6">
-        {routes.length === 0 ? (
-          <div className="text-sm text-secondary py-3 px-4 bg-black/20 rounded-lg">
-            No routes configured yet. Click <strong>+ Create New Route</strong> to build your first vertical route!
-          </div>
-        ) : (
-          routes.map((route) => {
-            const isSelected = route.id === (activeRoute?.id || '');
+      {/* Filter / Route Switcher Bar */}
+      <div className="flex items-center justify-between flex-wrap gap-3 pb-2">
+        <div className="route-switcher-bar">
+          <button
+            onClick={() => setFilterRouteId('all')}
+            className={cn(
+              'route-tab-pill',
+              filterRouteId === 'all' && 'route-tab-pill-active'
+            )}
+          >
+            <span className="text-base">📋</span>
+            <div className="flex flex-col text-left">
+              <span className="route-tab-title">View All Routes Vertically</span>
+              <span className="route-tab-subtitle">
+                {routes.length} Corridors &bull; {totalAllStops} Total Stops
+              </span>
+            </div>
+          </button>
+
+          {routes.map((route) => {
+            const isSelected = filterRouteId === route.id;
             const stopCount = route.stops?.length || 0;
             return (
               <button
                 key={route.id}
-                onClick={() => setSelectedRouteId(route.id)}
+                onClick={() => setFilterRouteId(route.id)}
                 className={cn(
                   'route-tab-pill',
                   isSelected && 'route-tab-pill-active'
@@ -307,275 +348,263 @@ export default function AdminRoutesPage() {
                 </div>
               </button>
             );
-          })
-        )}
+          })}
+        </div>
       </div>
 
-      {/* Main Studio View: Vertical Timeline + Telemetry Panel */}
-      {activeRoute && (
-        <div className="grid grid-1 lg:grid-3 gap-6 items-start">
-          {/* Left / Center 2 Columns: Vertical Metro Route Timeline */}
-          <div className="lg:col-span-2 space-y-6">
-            <Card className="vertical-timeline-card">
-              {/* Timeline Header with Controls */}
-              <div className="vertical-timeline-header">
-                <div className="flex items-center gap-3">
-                  <div className="route-icon-badge">🚌</div>
-                  <div>
-                    <h2 className="text-lg font-bold text-primary">
-                      {activeRoute.name}
-                    </h2>
-                    <p className="text-xs text-secondary">
-                      {activeRoute.description || 'Primary School Bus Corridor'}
-                    </p>
+      {/* Vertical Routes List (Each route rendered vertically with full timeline) */}
+      {displayedRoutes.length === 0 ? (
+        <Card className="liquid-glass-card text-center py-12">
+          <CardBody>
+            <span className="text-5xl">🚏</span>
+            <h3 className="text-lg font-bold text-primary mt-4">
+              No routes configured yet
+            </h3>
+            <p className="text-xs text-secondary mt-1">
+              Click "+ Create New Route" above to build your first vertical corridor!
+            </p>
+            <Button
+              variant="primary"
+              className="mt-6"
+              onClick={() => setCreateModalOpen(true)}
+            >
+              ✨ + Create First Route
+            </Button>
+          </CardBody>
+        </Card>
+      ) : (
+        <div className="space-y-8">
+          {displayedRoutes.map((route, rIdx) => {
+            const stops = route.stops || [];
+            const routeStudentsCount = stops.reduce(
+              (acc, s) => acc + (s.students?.length || 0),
+              0
+            );
+            const isSimulating = activeSimRouteId === route.id;
+
+            return (
+              <Card
+                key={route.id}
+                className="vertical-timeline-card border border-honey/20 shadow-2xl"
+              >
+                {/* Route Header Banner */}
+                <div className="vertical-timeline-header bg-black/20">
+                  <div className="flex items-center gap-3">
+                    <div className="route-icon-badge">🚌</div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-lg font-extrabold text-primary">
+                          {route.name}
+                        </h2>
+                        <span className="text-xs px-2.5 py-0.5 rounded-full bg-honey/15 border border-honey/30 text-accent font-bold">
+                          {stops.length} {stops.length === 1 ? 'Stop' : 'Stops'}
+                        </span>
+                        <span className="text-xs px-2.5 py-0.5 rounded-full bg-green-500/15 border border-green-500/30 text-green-400 font-bold">
+                          {routeStudentsCount} Students
+                        </span>
+                      </div>
+                      <p className="text-xs text-secondary mt-0.5">
+                        {route.description || 'GPS Synced High-Priority Route'}
+                      </p>
+                    </div>
                   </div>
-                </div>
 
-                {/* Simulation Control Bar */}
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={() => setIsPlaying(!isPlaying)}
-                    id="play-vertical-sim-btn"
-                  >
-                    {isPlaying ? '⏸️ Pause' : '▶️ Play Sim'}
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() =>
-                      setCurrentStopIndex((p) =>
-                        Math.min(stops.length - 1, p + 1)
-                      )
-                    }
-                    disabled={currentStopIndex >= stops.length - 1}
-                  >
-                    ⏭️ Next
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setCurrentStopIndex(0);
-                      setIsPlaying(false);
-                    }}
-                  >
-                    🔄 Reset
-                  </Button>
-                </div>
-              </div>
-
-              {/* Vertical Metro Line Stops */}
-              <CardBody className="p-6">
-                {stops.length === 0 ? (
-                  <div className="text-center py-12">
-                    <span className="text-4xl">🚏</span>
-                    <p className="text-sm font-bold text-primary mt-3">
-                      No stops mapped to this route yet
-                    </p>
-                    <p className="text-xs text-secondary mt-1">
-                      Add stops vertically to configure the bus sequence.
-                    </p>
+                  {/* Route Action Controls */}
+                  <div className="flex items-center gap-2">
                     <Button
-                      variant="primary"
+                      variant={isSimulating ? 'danger' : 'primary'}
                       size="sm"
-                      className="mt-4"
-                      onClick={() => setAddStopModalOpen(true)}
+                      onClick={() => {
+                        if (isSimulating) {
+                          setActiveSimRouteId(null);
+                          setSimStopIndex(0);
+                        } else {
+                          setActiveSimRouteId(route.id);
+                          setSimStopIndex(0);
+                          toast.success(`Starting live simulation for "${route.name}"! 🚌`);
+                        }
+                      }}
                     >
-                      + Add First Stop
+                      {isSimulating ? '⏸ Pause Sim' : '▶ Play Sim'}
+                    </Button>
+
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        setTargetRouteId(route.id);
+                        setAddStopModalOpen(true);
+                      }}
+                    >
+                      + Add Stop
+                    </Button>
+
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => handleDeleteRoute(route.id, route.name)}
+                    >
+                      🗑️
                     </Button>
                   </div>
-                ) : (
-                  <div className="vertical-route-track-container">
-                    {/* The Continuous Glowing Vertical Metro Track Line */}
-                    <div className="vertical-track-line" />
+                </div>
 
-                    {/* Vertical Stop Nodes */}
-                    <div className="space-y-8 relative z-10">
-                      {stops.map((stop, index) => {
-                        const isCurrent = index === currentStopIndex;
-                        const isPassed = index < currentStopIndex;
-                        const isDestination = index === stops.length - 1;
-                        const stopStudents = stop.students || [];
+                {/* Vertical Stops Sequence */}
+                <CardBody className="p-6">
+                  {stops.length === 0 ? (
+                    <div className="text-center py-8 bg-black/10 rounded-xl border border-white/5">
+                      <span className="text-3xl">🚏</span>
+                      <p className="text-sm font-bold text-primary mt-2">
+                        No stops mapped to this corridor yet
+                      </p>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        className="mt-3"
+                        onClick={() => {
+                          setTargetRouteId(route.id);
+                          setAddStopModalOpen(true);
+                        }}
+                      >
+                        + Add Stop #1
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="vertical-route-track-container">
+                      {/* Vertical Continuous Track Line */}
+                      <div className="vertical-track-line" />
 
-                        return (
-                          <div
-                            key={stop.id}
-                            className={cn(
-                              'vertical-stop-row',
-                              isCurrent && 'vertical-stop-current',
-                              isPassed && 'vertical-stop-passed'
-                            )}
-                          >
-                            {/* Left: Stop Node Circle */}
-                            <div className="vertical-node-wrapper">
-                              <div
-                                className={cn(
-                                  'vertical-stop-circle',
-                                  isCurrent && 'circle-current-bus',
-                                  isPassed && 'circle-passed',
-                                  isDestination && 'circle-destination'
-                                )}
-                              >
-                                {isCurrent ? (
-                                  <span className="animate-bounce text-sm">🚌</span>
-                                ) : isDestination ? (
-                                  <span>🏁</span>
-                                ) : (
-                                  <span>{stop.stop_number || index + 1}</span>
-                                )}
-                              </div>
+                      {/* Stops list */}
+                      <div className="space-y-6 relative z-10">
+                        {stops.map((stop, sIndex) => {
+                          const isCurrent =
+                            isSimulating && sIndex === simStopIndex;
+                          const isPassed =
+                            isSimulating && sIndex < simStopIndex;
+                          const isDestination = sIndex === stops.length - 1;
+                          const stopStudents = stop.students || [];
 
-                              {/* Stop ETA Badge */}
-                              <span className="vertical-time-pill">
-                                {stop.scheduled_time || `Stop #${index + 1}`}
-                              </span>
-                            </div>
-
-                            {/* Right: Stop Content Card */}
-                            <div className="vertical-stop-card">
-                              <div className="flex items-start justify-between gap-3">
-                                <div>
-                                  <div className="flex items-center gap-2">
-                                    <h4 className="text-sm font-extrabold text-primary">
-                                      {stop.name}
-                                    </h4>
-                                    {isCurrent && (
-                                      <span className="live-status-pill">
-                                        <span className="live-radar-dot" /> Current Location
-                                      </span>
-                                    )}
-                                  </div>
-                                  <p className="text-xs text-secondary mt-0.5">
-                                    📍 {stop.address || 'Standard Pickup Point'}
-                                  </p>
+                          return (
+                            <div
+                              key={stop.id}
+                              className={cn(
+                                'vertical-stop-row',
+                                isCurrent && 'vertical-stop-current',
+                                isPassed && 'vertical-stop-passed'
+                              )}
+                            >
+                              {/* Left: Stop Node Circle + Time */}
+                              <div className="vertical-node-wrapper">
+                                <div
+                                  className={cn(
+                                    'vertical-stop-circle',
+                                    isCurrent && 'circle-current-bus',
+                                    isPassed && 'circle-passed',
+                                    isDestination && 'circle-destination'
+                                  )}
+                                >
+                                  {isCurrent ? (
+                                    <span className="animate-bounce text-sm">
+                                      🚌
+                                    </span>
+                                  ) : isDestination ? (
+                                    <span>🏁</span>
+                                  ) : isPassed ? (
+                                    <span>✓</span>
+                                  ) : (
+                                    <span>{stop.stop_number || sIndex + 1}</span>
+                                  )}
                                 </div>
 
-                                {/* Stop Actions */}
-                                <div className="flex items-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity">
+                                <span className="vertical-time-pill">
+                                  {stop.expected_time || `Stop #${sIndex + 1}`}
+                                </span>
+                              </div>
+
+                              {/* Right: Stop Card */}
+                              <div className="vertical-stop-card">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <h4 className="text-sm font-extrabold text-primary">
+                                        {stop.name}
+                                      </h4>
+                                      {isCurrent && (
+                                        <span className="live-status-pill">
+                                          <span className="live-radar-dot" /> Bus At Stop
+                                        </span>
+                                      )}
+                                      {isDestination && (
+                                        <span className="text-[10px] px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-400 font-bold border border-yellow-500/30">
+                                          Campus Drop-off
+                                        </span>
+                                      )}
+                                    </div>
+                                    <p className="text-xs text-secondary mt-0.5">
+                                      📍 {stop.address || 'Standard Location Point'}
+                                    </p>
+                                  </div>
+
                                   <button
                                     onClick={() =>
                                       handleDeleteStop(stop.id, stop.name)
                                     }
-                                    className="stop-action-btn text-red-400"
+                                    className="text-xs text-red-400 hover:text-red-300 p-1 rounded"
                                     title="Delete Stop"
                                   >
                                     🗑️
                                   </button>
                                 </div>
-                              </div>
 
-                              {/* Enrolled Students at this Stop */}
-                              <div className="mt-3 pt-2.5 border-t border-white/5 flex flex-wrap items-center gap-2">
-                                <span className="text-[11px] font-bold text-secondary uppercase tracking-wider">
-                                  Enrolled ({stopStudents.length}):
-                                </span>
-                                {stopStudents.length === 0 ? (
-                                  <span className="text-xs text-muted italic">
-                                    No students assigned to this stop yet
+                                {/* Student Chips */}
+                                <div className="mt-3 pt-2.5 border-t border-white/5 flex flex-wrap items-center gap-2">
+                                  <span className="text-[11px] font-bold text-secondary uppercase tracking-wider">
+                                    Students ({stopStudents.length}):
                                   </span>
-                                ) : (
-                                  stopStudents.map((st) => (
-                                    <span key={st.id} className="student-chip-artisan">
-                                      👨‍🎓 {st.name}{' '}
-                                      <span className="opacity-70 text-[10px]">
-                                        ({st.class}-{st.section})
-                                      </span>
+                                  {stopStudents.length === 0 ? (
+                                    <span className="text-xs text-muted italic">
+                                      No students assigned yet
                                     </span>
-                                  ))
-                                )}
+                                  ) : (
+                                    stopStudents.map((st) => (
+                                      <span
+                                        key={st.id}
+                                        className="student-chip-artisan"
+                                      >
+                                        👨‍🎓 {st.name}{' '}
+                                        {st.class && (
+                                          <span className="opacity-70 text-[10px]">
+                                            ({st.class}-{st.section || 'A'})
+                                          </span>
+                                        )}
+                                      </span>
+                                    ))
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
+
+                      {/* Append Next Stop button */}
+                      <div className="pt-6 pl-14">
+                        <button
+                          className="add-vertical-stop-btn"
+                          onClick={() => {
+                            setTargetRouteId(route.id);
+                            setAddStopModalOpen(true);
+                          }}
+                        >
+                          <span className="text-base font-bold">+</span> Add Next Stop to &quot;{route.name}&quot;
+                        </button>
+                      </div>
                     </div>
-
-                    {/* Bottom Append Stop Button */}
-                    <div className="pt-6 pl-14">
-                      <button
-                        className="add-vertical-stop-btn"
-                        onClick={() => setAddStopModalOpen(true)}
-                        id="add-stop-to-route-btn"
-                      >
-                        <span className="text-base font-bold">+</span> Add Next Stop to this Sequence
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </CardBody>
-            </Card>
-          </div>
-
-          {/* Right 1 Column: Route Telemetry & Live Event Log */}
-          <div className="space-y-6">
-            {/* Route Stats Card */}
-            <Card className="liquid-glass-card">
-              <CardHeader className="border-b border-white/10 pb-3">
-                <CardTitle className="text-sm font-bold text-primary flex items-center gap-2">
-                  📊 Route Telemetry
-                </CardTitle>
-              </CardHeader>
-              <CardBody className="space-y-4 pt-4">
-                <div className="grid grid-2 gap-3">
-                  <div className="telemetry-box">
-                    <span className="telemetry-label">Total Stops</span>
-                    <span className="telemetry-val">{stops.length}</span>
-                  </div>
-                  <div className="telemetry-box">
-                    <span className="telemetry-label">Enrolled Body</span>
-                    <span className="telemetry-val text-accent">
-                      {totalStudentsInRoute}
-                    </span>
-                  </div>
-                  <div className="telemetry-box">
-                    <span className="telemetry-label">Status</span>
-                    <span className="telemetry-val text-green-400">
-                      {activeRoute.active ? '🟢 Active' : '⚪ Inactive'}
-                    </span>
-                  </div>
-                  <div className="telemetry-box">
-                    <span className="telemetry-label">Est. Duration</span>
-                    <span className="telemetry-val">
-                      {stops.length * 7} Mins
-                    </span>
-                  </div>
-                </div>
-
-                <div className="pt-2 border-t border-white/10 flex items-center justify-between">
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    className="w-full"
-                    onClick={() =>
-                      handleDeleteRoute(activeRoute.id, activeRoute.name)
-                    }
-                  >
-                    🗑️ Delete Entire Route
-                  </Button>
-                </div>
-              </CardBody>
-            </Card>
-
-            {/* Live Route Dispatch Logs */}
-            <Card className="liquid-glass-card">
-              <CardHeader className="border-b border-white/10 pb-3">
-                <CardTitle className="text-sm font-bold text-primary flex items-center gap-2">
-                  <span className="live-radar-dot" /> Live Route Dispatch Logs
-                </CardTitle>
-              </CardHeader>
-              <CardBody className="pt-3">
-                <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
-                  {logs.map((log, i) => (
-                    <div key={i} className="route-log-pill">
-                      {log}
-                    </div>
-                  ))}
-                </div>
-              </CardBody>
-            </Card>
-          </div>
+                  )}
+                </CardBody>
+              </Card>
+            );
+          })}
         </div>
       )}
 
@@ -585,7 +614,7 @@ export default function AdminRoutesPage() {
       <Modal
         open={createModalOpen}
         onClose={() => setCreateModalOpen(false)}
-        title="✨ Create New Route Architecture"
+        title="✨ Create New Vertical Route"
         size="lg"
       >
         <div className="space-y-6 pt-2">
@@ -625,7 +654,7 @@ export default function AdminRoutesPage() {
                     {
                       name: `Stop #${prev.length + 1}`,
                       address: '',
-                      scheduled_time: '07:00 AM',
+                      expected_time: '07:00 AM',
                     },
                   ])
                 }
@@ -665,11 +694,11 @@ export default function AdminRoutesPage() {
                     <input
                       type="text"
                       className="input input-sm"
-                      placeholder="Time (e.g. 06:45 AM)"
-                      value={stop.scheduled_time}
+                      placeholder="Expected Time (e.g. 06:45 AM)"
+                      value={stop.expected_time}
                       onChange={(e) => {
                         const copy = [...dynamicStops];
-                        copy[idx].scheduled_time = e.target.value;
+                        copy[idx].expected_time = e.target.value;
                         setDynamicStops(copy);
                       }}
                     />
@@ -700,18 +729,18 @@ export default function AdminRoutesPage() {
             loading={savingRoute}
             onClick={handleCreateRoute}
           >
-            Create Route & Sequential Stops
+            Create Route &amp; Sequential Stops
           </Button>
         </ModalFooter>
       </Modal>
 
       {/* =============================================
-          MODAL: ADD SINGLE STOP TO ACTIVE ROUTE
+          MODAL: ADD SINGLE STOP TO SPECIFIC ROUTE
          ============================================= */}
       <Modal
         open={addStopModalOpen}
         onClose={() => setAddStopModalOpen(false)}
-        title={`🚏 Add Stop to "${activeRoute?.name || ''}"`}
+        title="🚏 Add Stop to Route Sequence"
         size="sm"
       >
         <div className="flex flex-col gap-4 pt-2">
@@ -733,10 +762,10 @@ export default function AdminRoutesPage() {
             placeholder="e.g. Near HDFC Bank ATM"
           />
           <Input
-            label="Scheduled Arrival Time"
-            value={stopForm.scheduled_time}
+            label="Expected Arrival Time"
+            value={stopForm.expected_time}
             onChange={(e) =>
-              setStopForm({ ...stopForm, scheduled_time: e.target.value })
+              setStopForm({ ...stopForm, expected_time: e.target.value })
             }
             placeholder="e.g. 06:55 AM"
           />

@@ -21,7 +21,7 @@ export async function GET() {
           name,
           address,
           stop_number,
-          scheduled_time,
+          expected_time,
           students (
             id,
             name,
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
         name: s.name,
         address: s.address || '',
         stop_number: s.stop_number || idx + 1,
-        scheduled_time: s.scheduled_time || '07:00 AM',
+        expected_time: s.expected_time || s.scheduled_time || '07:00 AM',
       }));
 
       const { error: stopsError } = await supabase
