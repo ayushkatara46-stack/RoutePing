@@ -2766,6 +2766,43 @@ h5 { font-size: var(--text-base); font-weight: 600; }
   width: fit-content;
 }
 
+/* Route Selector Dropdown */
+.route-select-wrapper {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(224, 135, 20, 0.3);
+  padding: 4px 10px;
+  border-radius: var(--radius-md);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.route-select-control {
+  background: transparent;
+  color: #fff;
+  border: none;
+  font-size: 13px;
+  font-weight: 800;
+  outline: none;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.route-select-control option {
+  background: #1a1510;
+  color: #fff;
+  font-weight: 600;
+  padding: 8px;
+}
+
+.route-sub-banner {
+  background: rgba(224, 135, 20, 0.05);
+  border: 1px solid rgba(224, 135, 20, 0.12);
+  border-radius: var(--radius-md);
+  padding: 6px 14px;
+  margin-bottom: 22px;
+}
+
 .route-actions-clean {
   display: flex;
   align-items: center;
