@@ -2,6 +2,7 @@
 
 // =============================================
 // Sidebar Component — Collapsible Slide-bar
+// With Edge Floating Handle (where circled by user)
 // =============================================
 
 import Link from 'next/link';
@@ -21,18 +22,20 @@ export default function Sidebar() {
       id="admin-sidebar"
       aria-label="Admin Navigation"
     >
-      {/* Sidebar Header with Slide/Toggle button */}
+      {/* Floating Edge Slide Handle (Exactly on the middle border where circled) */}
+      <button
+        className="sidebar-edge-handle"
+        onClick={toggleSidebar}
+        title={collapsed ? 'Slide Open Admin Panel (▶)' : 'Slide Close Admin Panel (◀)'}
+        aria-label={collapsed ? 'Slide Open Admin Panel' : 'Slide Close Admin Panel'}
+        id="sidebar-edge-slide-btn"
+      >
+        <span>{collapsed ? '▶' : '◀'}</span>
+      </button>
+
+      {/* Sidebar Header */}
       <div className="sidebar-header">
-        {!collapsed && <h3 className="sidebar-title">Admin Panel</h3>}
-        <button
-          className="sidebar-toggle-btn"
-          onClick={toggleSidebar}
-          title={collapsed ? 'Expand Sidebar (Open)' : 'Collapse Sidebar (Close)'}
-          aria-label={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
-          id="sidebar-slide-toggle"
-        >
-          {collapsed ? '▶' : '◀'}
-        </button>
+        <h3 className="sidebar-title">Admin Panel</h3>
       </div>
 
       {/* Navigation Links */}
@@ -48,15 +51,11 @@ export default function Sidebar() {
               href={item.href}
               className={cn(
                 'sidebar-link',
-                isActive && 'sidebar-link-active',
-                collapsed && 'sidebar-link-collapsed'
+                isActive && 'sidebar-link-active'
               )}
-              title={collapsed ? item.label : undefined}
             >
               <span className="sidebar-link-icon">{item.icon}</span>
-              {!collapsed && (
-                <span className="sidebar-link-label">{item.label}</span>
-              )}
+              <span className="sidebar-link-label">{item.label}</span>
             </Link>
           );
         })}
