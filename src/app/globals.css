@@ -2946,3 +2946,272 @@ h5 { font-size: var(--text-base); font-weight: 600; }
   color: var(--accent-red);
 }
 
+/* =============================================
+   23. VERTICAL ROUTE STUDIO & METRO TIMELINE
+   ============================================= */
+.routes-studio-container {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Route Switcher Tabs */
+.route-switcher-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.route-tab-pill {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(224, 135, 20, 0.18);
+  border-radius: var(--radius-lg);
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.route-tab-pill:hover {
+  background: rgba(224, 135, 20, 0.1);
+  border-color: rgba(224, 135, 20, 0.35);
+  transform: translateY(-1px);
+}
+
+.route-tab-pill-active {
+  background: rgba(224, 135, 20, 0.2) !important;
+  border-color: var(--honey-primary) !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4), 0 0 14px rgba(224, 135, 20, 0.35);
+}
+
+.route-tab-title {
+  font-weight: 800;
+  font-size: 13px;
+  color: #fff;
+}
+
+.route-tab-subtitle {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+/* Vertical Timeline Card */
+.vertical-timeline-card {
+  background: rgba(22, 17, 12, 0.85);
+  border: 1px solid rgba(224, 135, 20, 0.22);
+  backdrop-filter: blur(20px);
+  border-radius: var(--radius-xl);
+}
+
+.vertical-timeline-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(224, 135, 20, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.route-icon-badge {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-md);
+  background: rgba(224, 135, 20, 0.15);
+  border: 1px solid rgba(224, 135, 20, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+/* Vertical Route Track Container */
+.vertical-route-track-container {
+  position: relative;
+  padding: 12px 8px;
+}
+
+.vertical-track-line {
+  position: absolute;
+  left: 33px;
+  top: 28px;
+  bottom: 80px;
+  width: 4px;
+  background: linear-gradient(to bottom, var(--honey-primary), #d97706, rgba(224, 135, 20, 0.2));
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(224, 135, 20, 0.4);
+}
+
+.vertical-stop-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  position: relative;
+}
+
+.vertical-node-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 68px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+
+.vertical-stop-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #120f0b;
+  border: 3px solid rgba(224, 135, 20, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 13px;
+  color: var(--honey-text);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.circle-current-bus {
+  border-color: var(--honey-primary) !important;
+  background: var(--honey-primary) !important;
+  color: #1b1208 !important;
+  box-shadow: 0 0 24px rgba(245, 158, 11, 0.9), 0 4px 16px rgba(0, 0, 0, 0.8) !important;
+  transform: scale(1.15);
+}
+
+.circle-passed {
+  border-color: #22c55e !important;
+  background: rgba(34, 197, 94, 0.15) !important;
+  color: #4ade80 !important;
+}
+
+.circle-destination {
+  border-color: #eab308 !important;
+  background: rgba(234, 179, 8, 0.15) !important;
+  color: #fde047 !important;
+}
+
+.vertical-time-pill {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--honey-text);
+  background: rgba(224, 135, 20, 0.15);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(224, 135, 20, 0.25);
+  white-space: nowrap;
+}
+
+.vertical-stop-card {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(224, 135, 20, 0.14);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+
+.vertical-stop-current .vertical-stop-card {
+  border-color: rgba(224, 135, 20, 0.45);
+  background: rgba(224, 135, 20, 0.06);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.5), 0 0 16px rgba(224, 135, 20, 0.2);
+}
+
+.student-chip-artisan {
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  color: #fef8ee;
+}
+
+.add-vertical-stop-btn {
+  width: 100%;
+  padding: 12px;
+  border: 2px dashed rgba(224, 135, 20, 0.3);
+  border-radius: var(--radius-lg);
+  background: rgba(224, 135, 20, 0.04);
+  color: var(--honey-text);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-vertical-stop-btn:hover {
+  background: rgba(224, 135, 20, 0.12);
+  border-color: var(--honey-primary);
+  color: #fff;
+}
+
+.dynamic-stop-builder-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+}
+
+.stop-builder-number {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(224, 135, 20, 0.2);
+  color: var(--honey-primary);
+  font-size: 12px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid rgba(224, 135, 20, 0.3);
+}
+
+.telemetry-box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.telemetry-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.telemetry-val {
+  font-size: 15px;
+  font-weight: 900;
+  color: #fff;
+}
+
+.route-log-pill {
+  font-size: 11px;
+  color: var(--text-secondary);
+  background: rgba(0, 0, 0, 0.35);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
