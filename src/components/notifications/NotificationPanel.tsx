@@ -2,9 +2,11 @@
 
 // =============================================
 // Notification Panel Component — Liquid Glass
-// With Close Button (✕) and Smooth Glassmorphism
+// With Draggable Left Edge Resizer, Close Handle,
+// and Freeform Width Sizing
 // =============================================
 
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { formatTimestamp } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 import type { Notification } from '@/types';
@@ -16,6 +18,11 @@ const TYPE_ICONS: Record<string, string> = {
   route_update: '🗺️',
   system: 'ℹ️',
 };
+
+const DEFAULT_WIDTH = 400;
+const MIN_WIDTH = 280;
+const MAX_WIDTH = 750;
+const SNAP_CLOSE_THRESHOLD = 180;
 
 interface NotificationPanelProps {
   notifications: Notification[];
@@ -31,6 +38,92 @@ export default function NotificationPanel({
   onMarkAllRead,
 }: NotificationPanelProps) {
   const unreadCount = notifications.filter((n) => !n.read).length;
+  const [width, setWidth] = useState<number>(DEFAULT_WIDTH);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const startXRef = useRef<number>(0);
+  const startWidthRef = useRef<number>(DEFAULT_WIDTH);
+
+  // Load saved width
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('notification_panel_width');
+      if (saved) {
+        const parsed = parseInt(saved, 10);
+        if (!isNaN(parsed) && parsed >= MIN_WIDTH && parsed <= MAX_WIDTH) {
+          setWidth(parsed);
+        }
+      }
+    } catch {
+      // Ignore
+    }
+  }, []);
+
+  // Global mouse & touch listeners for smooth dragging from right-pinned panel
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      // Since panel is pinned to right (right: 0), moving mouse LEFT increases width:
+      const newWidth = window.innerWidth - e.clientX;
+      if (newWidth < SNAP_CLOSE_THRESHOLD) {
+        onClose();
+      } else {
+        const clamped = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, newWidth));
+        setWidth(clamped);
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        const newWidth = window.innerWidth - e.touches[0].clientX;
+        if (newWidth < SNAP_CLOSE_THRESHOLD) {
+          onClose();
+        } else {
+          const clamped = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, newWidth));
+          setWidth(clamped);
+        }
+      }
+    };
+
+    const handleDragEnd = () => {
+      setIsDragging(false);
+      document.body.style.removeProperty('user-select');
+      document.body.style.removeProperty('cursor');
+      setWidth((current) => {
+        try {
+          localStorage.setItem('notification_panel_width', String(current));
+        } catch {
+          // Ignore
+        }
+        return current;
+      });
+    };
+
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'col-resize';
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleDragEnd);
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('touchend', handleDragEnd);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleDragEnd);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleDragEnd);
+      document.body.style.removeProperty('user-select');
+      document.body.style.removeProperty('cursor');
+    };
+  }, [isDragging, onClose]);
+
+  const startDragging = useCallback(
+    (e: React.MouseEvent | React.TouchEvent) => {
+      e.preventDefault();
+      setIsDragging(true);
+    },
+    []
+  );
 
   return (
     <>
@@ -41,13 +134,50 @@ export default function NotificationPanel({
         aria-hidden="true"
       />
 
-      {/* Liquid Glass Slide Panel */}
+      {/* Liquid Glass Slide Panel with dynamic resizable width */}
       <div
-        className="notification-panel-liquid"
+        className={cn(
+          'notification-panel-liquid',
+          isDragging && 'notification-is-dragging'
+        )}
         id="notification-panel"
         role="dialog"
         aria-label="Notifications Panel"
+        style={{ width: `${width}px` }}
       >
+        {/* Full-height Draggable Left Resizer Line */}
+        <div
+          className="notification-resizer-line"
+          onMouseDown={startDragging}
+          onTouchStart={startDragging}
+          title="Drag left/right to resize notifications panel"
+        >
+          {/* Floating Tactile Pill Grip & Close Handle on the left divider border */}
+          <button
+            className="notification-edge-handle"
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
+            onMouseDown={(e) => {
+              startDragging(e);
+            }}
+            title="Click to Close (▶) or Drag to Resize"
+            aria-label="Toggle or Resize Notifications"
+            id="notification-edge-slide-btn"
+          >
+            <span className="edge-drag-dots">⋮</span>
+            <span className="edge-chevron">▶</span>
+          </button>
+        </div>
+
+        {/* Floating Width Tooltip while dragging */}
+        {isDragging && (
+          <div className="notification-width-tooltip">
+            {`${Math.round(width)}px`}
+          </div>
+        )}
+
         {/* Liquid Glass Header */}
         <div className="notification-liquid-header">
           <div className="flex items-center gap-2">
