@@ -984,6 +984,27 @@ h5 { font-size: var(--text-base); font-weight: 600; }
   margin-top: 1px;
 }
 
+/* Navbar Sidebar Slide Toggle Button */
+.navbar-sidebar-toggle {
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  color: #2a1604;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.navbar-sidebar-toggle:hover {
+  background: rgba(0, 0, 0, 0.28);
+  color: #120902;
+  transform: scale(1.05);
+}
+
 /* Center Menu Links (Artisan Style) */
 .navbar-nav-links {
   display: flex;
@@ -1107,65 +1128,153 @@ h5 { font-size: var(--text-base); font-weight: 600; }
 }
 
 /* =============================================
-   14. SIDEBAR (Admin)
+   14. SIDEBAR (Admin — Collapsible Slide Bar)
    ============================================= */
-.layout-with-sidebar {
+.admin-layout {
   display: flex;
+  flex: 1;
   min-height: calc(100vh - var(--navbar-height));
+  transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebar {
-  width: var(--sidebar-width);
-  background: rgba(10, 14, 26, 0.6);
-  border-right: 1px solid var(--border-subtle);
-  padding: var(--space-4) 0;
+  width: 240px;
+  background: rgba(18, 14, 10, 0.95);
+  border-right: 1px solid var(--border-default);
+  padding: 0;
   position: sticky;
   top: var(--navbar-height);
   height: calc(100vh - var(--navbar-height));
   overflow-y: auto;
+  overflow-x: hidden;
   flex-shrink: 0;
+  transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1), transform 0.28s ease;
+  display: flex;
+  flex-direction: column;
+  z-index: 50;
+}
+
+.sidebar-collapsed {
+  width: 68px !important;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid rgba(224, 135, 20, 0.12);
+  min-height: 52px;
+}
+
+.sidebar-collapsed .sidebar-header {
+  justify-content: center;
+  padding: 16px 8px 12px;
+}
+
+.sidebar-title {
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.sidebar-toggle-btn {
+  background: rgba(224, 135, 20, 0.12);
+  border: 1px solid rgba(224, 135, 20, 0.25);
+  color: var(--accent-primary);
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.sidebar-toggle-btn:hover {
+  background: var(--accent-primary);
+  color: #1b1208;
+  transform: scale(1.06);
 }
 
 .sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
-  padding: 0 var(--space-3);
+  gap: 4px;
+  padding: 12px 10px;
+  flex: 1;
+}
+
+.sidebar-collapsed .sidebar-nav {
+  padding: 12px 6px;
+  align-items: center;
 }
 
 .sidebar-link {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
+  gap: 12px;
+  padding: 10px 14px;
   border-radius: var(--radius-md);
   font-size: var(--text-sm);
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-secondary);
-  transition: all var(--transition-fast);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .sidebar-link:hover {
-  background: var(--glass-bg-hover);
-  color: var(--text-primary);
+  background: rgba(224, 135, 20, 0.12);
+  color: #fef8ee;
+  transform: translateX(2px);
 }
 
-.sidebar-link.active {
-  background: var(--accent-primary-dim);
-  color: var(--accent-primary);
-  font-weight: 600;
+.sidebar-link.sidebar-link-active {
+  background: rgba(224, 135, 20, 0.2) !important;
+  color: var(--accent-primary) !important;
+  border: 1px solid rgba(224, 135, 20, 0.35);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-.sidebar-link .link-icon {
-  font-size: var(--text-lg);
+.sidebar-link-collapsed {
+  justify-content: center;
+  padding: 10px;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+}
+
+.sidebar-link-collapsed:hover {
+  transform: scale(1.08);
+}
+
+.sidebar-link-icon {
+  font-size: 1.2rem;
   width: 24px;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-.sidebar-content {
+.sidebar-link-label {
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}
+
+.admin-content {
   flex: 1;
   padding: var(--space-6);
   overflow-y: auto;
+  min-width: 0;
+  transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* =============================================

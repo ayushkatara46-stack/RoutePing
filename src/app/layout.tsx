@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/components/auth/AuthProvider';
 import { ToastProvider } from '@/components/ui/Toast';
+import { SidebarProvider } from '@/context/SidebarContext';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -11,14 +12,14 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'BusTrack — School Bus Attendance System',
+  title: 'RoutePing — School Bus Attendance & Route System',
   description:
-    'Confirm daily bus attendance, view optimized routes, and manage school bus operations.',
+    'Confirm daily bus attendance, view optimized routes, and manage school bus operations in real time.',
   manifest: '/manifest.json',
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0a0e1a',
+  themeColor: '#e08714',
 };
 
 export default function RootLayout({
@@ -30,7 +31,9 @@ export default function RootLayout({
     <html lang="en" className={inter.className}>
       <body>
         <AuthProvider>
-          <ToastProvider>{children}</ToastProvider>
+          <ToastProvider>
+            <SidebarProvider>{children}</SidebarProvider>
+          </ToastProvider>
         </AuthProvider>
       </body>
     </html>
