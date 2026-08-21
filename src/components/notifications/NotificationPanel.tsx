@@ -1,7 +1,8 @@
 'use client';
 
 // =============================================
-// Notification Panel Component
+// Notification Panel Component — Liquid Glass
+// With Close Button (✕) and Smooth Glassmorphism
 // =============================================
 
 import { formatTimestamp } from '@/lib/utils';
@@ -29,33 +30,77 @@ export default function NotificationPanel({
   onMarkRead,
   onMarkAllRead,
 }: NotificationPanelProps) {
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
   return (
     <>
-      <div className="notification-backdrop" onClick={onClose} />
-      <div className="notification-panel" id="notification-panel">
-        <div className="notification-panel-header">
-          <h3>Notifications</h3>
-          <button
-            className="btn btn-ghost btn-sm"
-            onClick={onMarkAllRead}
-          >
-            Mark all read
-          </button>
+      {/* Liquid Glass Backdrop (Click outside to close) */}
+      <div
+        className="notification-backdrop-glass"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+
+      {/* Liquid Glass Slide Panel */}
+      <div
+        className="notification-panel-liquid"
+        id="notification-panel"
+        role="dialog"
+        aria-label="Notifications Panel"
+      >
+        {/* Liquid Glass Header */}
+        <div className="notification-liquid-header">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">🔔</span>
+            <h3 className="text-base font-bold text-primary tracking-wide">
+              Notifications
+            </h3>
+            {unreadCount > 0 && (
+              <span className="liquid-unread-badge">{unreadCount}</span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            {notifications.length > 0 && (
+              <button
+                className="liquid-action-btn"
+                onClick={onMarkAllRead}
+                title="Mark all notifications as read"
+              >
+                Mark all read
+              </button>
+            )}
+
+            {/* Close Button (✕) */}
+            <button
+              className="liquid-close-btn"
+              onClick={onClose}
+              title="Close Notifications (✕)"
+              aria-label="Close Notifications"
+              id="close-notifications-btn"
+            >
+              ✕
+            </button>
+          </div>
         </div>
 
-        <div className="notification-list">
+        {/* Liquid Notification List */}
+        <div className="notification-liquid-list">
           {notifications.length === 0 ? (
-            <div className="notification-empty">
-              <span>🔔</span>
-              <p>No notifications yet</p>
+            <div className="notification-liquid-empty">
+              <div className="empty-bell-icon">🔔</div>
+              <p className="font-semibold text-primary">All caught up!</p>
+              <span className="text-xs text-secondary">
+                You have no pending notifications right now.
+              </span>
             </div>
           ) : (
             notifications.map((notif) => (
               <button
                 key={notif.id}
                 className={cn(
-                  'notification-item',
-                  !notif.read && 'notification-unread'
+                  'notification-liquid-item',
+                  !notif.read && 'liquid-item-unread'
                 )}
                 onClick={() => onMarkRead(notif.id)}
               >
@@ -63,13 +108,15 @@ export default function NotificationPanel({
                   {TYPE_ICONS[notif.type] || 'ℹ️'}
                 </span>
                 <div className="notification-content">
-                  <span className="notification-title">{notif.title}</span>
+                  <div className="flex items-center justify-between">
+                    <span className="notification-title">{notif.title}</span>
+                    {!notif.read && <span className="liquid-glow-dot" />}
+                  </div>
                   <span className="notification-message">{notif.message}</span>
                   <span className="notification-time">
                     {formatTimestamp(notif.created_at)}
                   </span>
                 </div>
-                {!notif.read && <span className="notification-dot" />}
               </button>
             ))
           )}
