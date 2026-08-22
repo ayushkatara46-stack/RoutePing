@@ -1,7 +1,9 @@
 'use client';
 
 // =============================================
-// Login Page
+// RoutePing Login Page
+// Featuring Animated School Bus driving Left-to-Right
+// with Artisan Honey & Espresso Liquid Glass Styling
 // =============================================
 
 import { useState } from 'react';
@@ -9,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import AnimatedSchoolBus from '@/components/animations/AnimatedSchoolBus';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -17,6 +20,12 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const supabase = createClient();
+
+  const handleQuickFill = (roleEmail: string, rolePass: string) => {
+    setEmail(roleEmail);
+    setPassword(rolePass);
+    setError('');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +46,7 @@ export default function LoginPage() {
       router.push('/');
       router.refresh();
     } catch {
-      setError('An unexpected error occurred');
+      setError('An unexpected error occurred. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -45,25 +54,62 @@ export default function LoginPage() {
 
   return (
     <div className="login-page">
-      <div className="login-container">
-        {/* Decorative background elements */}
-        <div className="login-bg-glow login-bg-glow-1" />
-        <div className="login-bg-glow login-bg-glow-2" />
+      {/* Decorative Ambient Honey Glow Orbs */}
+      <div className="login-bg-glow login-bg-glow-1" />
+      <div className="login-bg-glow login-bg-glow-2" />
 
-        <div className="login-card">
+      <div className="login-container relative z-10">
+        <div className="login-card liquid-glass-card shadow-2xl">
+          {/* Header Brand */}
           <div className="login-header">
-            <span className="login-logo">🚌</span>
-            <h1 className="login-title">BusTrack</h1>
+            <div className="login-logo-badge">
+              <span className="text-3xl">🚌</span>
+            </div>
+            <h1 className="login-title">ROUTEPING</h1>
             <p className="login-subtitle">
-              School Bus Attendance & Route System
+              Real-Time School Bus Transit &amp; Attendance
             </p>
           </div>
 
+          {/* Quick Demo Fill Pills */}
+          <div className="mb-5">
+            <div className="text-[11px] font-bold text-secondary text-center uppercase tracking-wider mb-2">
+              ⚡ 1-Click Demo Logins
+            </div>
+            <div className="grid grid-3 gap-2">
+              <button
+                type="button"
+                className="demo-login-pill"
+                onClick={() => handleQuickFill('admin@bustrack.test', 'Admin@123')}
+                title="Fill Admin Credentials"
+              >
+                👑 Admin
+              </button>
+              <button
+                type="button"
+                className="demo-login-pill"
+                onClick={() => handleQuickFill('parent@bustrack.test', 'Parent@123')}
+                title="Fill Parent Credentials"
+              >
+                👨‍👩‍👦 Parent
+              </button>
+              <button
+                type="button"
+                className="demo-login-pill"
+                onClick={() => handleQuickFill('driver@bustrack.test', 'Driver@123')}
+                title="Fill Driver Credentials"
+              >
+                🚌 Driver
+              </button>
+            </div>
+          </div>
+
+          {/* Form */}
           <form onSubmit={handleSubmit} className="login-form" id="login-form">
             <Input
-              label="Email"
+              label="Email Address"
               type="email"
-              placeholder="you@school.com"
+              placeholder="admin@bustrack.test"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -84,7 +130,7 @@ export default function LoginPage() {
 
             {error && (
               <div className="login-error" role="alert">
-                <span>⚠</span> {error}
+                <span>⚠️</span> {error}
               </div>
             )}
 
@@ -93,20 +139,23 @@ export default function LoginPage() {
               variant="primary"
               size="lg"
               loading={loading}
-              className="w-full"
+              className="w-full mt-2 font-bold shadow-honey"
               id="login-submit"
             >
-              Sign In
+              Sign In to RoutePing
             </Button>
           </form>
 
           <div className="login-footer">
-            <p className="text-xs text-muted text-center">
-              Contact your school administrator for account access
+            <p className="text-xs text-secondary text-center">
+              Protected by Enterprise School Security &bull; GPS Realtime
             </p>
           </div>
         </div>
       </div>
+
+      {/* Animated School Bus Running Left to Right on Road Track */}
+      <AnimatedSchoolBus />
     </div>
   );
 }
