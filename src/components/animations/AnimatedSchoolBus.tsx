@@ -200,7 +200,7 @@ export default function AnimatedSchoolBus() {
           <circle cx="260" cy="120" r="26" fill="#0A0806" />
 
           {/* Back Wheel (Spinning) */}
-          <g className="bus-wheel bus-wheel-rear">
+          <g className="bus-wheel">
             <circle cx="75" cy="120" r="23" fill="#1E293B" stroke="#334155" strokeWidth="4" />
             <circle cx="75" cy="120" r="14" fill="url(#rimGrad)" />
             <circle cx="75" cy="120" r="6" fill="#020617" />
@@ -210,7 +210,7 @@ export default function AnimatedSchoolBus() {
           </g>
 
           {/* Front Wheel (Spinning) */}
-          <g className="bus-wheel bus-wheel-front">
+          <g className="bus-wheel">
             <circle cx="260" cy="120" r="23" fill="#1E293B" stroke="#334155" strokeWidth="4" />
             <circle cx="260" cy="120" r="14" fill="url(#rimGrad)" />
             <circle cx="260" cy="120" r="6" fill="#020617" />

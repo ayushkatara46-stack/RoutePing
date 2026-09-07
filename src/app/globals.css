@@ -2112,10 +2112,10 @@ h5 { font-size: var(--text-base); font-weight: 600; }
 /* Driving Keyframe — uses translateX for GPU compositing across entire screen */
 @keyframes driveAcrossScreen {
   0% {
-    transform: translate3d(-280px, 0, 0);
+    transform: translate3d(-340px, 0, 0);
   }
   100% {
-    transform: translate3d(calc(100vw + 100px), 0, 0);
+    transform: translate3d(calc(100vw + 120px), 0, 0);
   }
 }
 
@@ -2155,21 +2155,13 @@ h5 { font-size: var(--text-base); font-weight: 600; }
   overflow: visible;
 }
 
-/* Spinning Wheels (60FPS GPU-Composited) */
+/* Spinning Wheels (60FPS GPU-Composited, perfectly centered inside wheel wells) */
 .bus-wheel {
   animation: spinWheel 0.45s linear infinite;
   transform-box: fill-box;
   transform-origin: center;
   will-change: transform;
   backface-visibility: hidden;
-}
-
-.bus-wheel-rear {
-  transform-origin: 75px 120px;
-}
-
-.bus-wheel-front {
-  transform-origin: 260px 120px;
 }
 
 .bus-turbo .bus-wheel {
@@ -2240,7 +2232,7 @@ h5 { font-size: var(--text-base); font-weight: 600; }
   position: absolute;
   top: 50%;
   left: 0;
-  width: 200vw;
+  width: 100vw;
   height: 3px;
   background: repeating-linear-gradient(
     90deg,
@@ -2249,16 +2241,7 @@ h5 { font-size: var(--text-base); font-weight: 600; }
     transparent 40px,
     transparent 80px
   );
-  animation: roadLinesMoving 0.75s linear infinite;
-}
-
-@keyframes roadLinesMoving {
-  0% {
-    transform: translate3d(0, 0, 0);
-  }
-  100% {
-    transform: translate3d(-80px, 0, 0);
-  }
+  opacity: 0.85;
 }
 
 /* =============================================
