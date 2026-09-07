@@ -2063,7 +2063,7 @@ h5 { font-size: var(--text-base); font-weight: 600; }
   left: 0;
   width: 220px;
   height: 110px;
-  animation: driveAcrossScreen 11s linear infinite, busSuspensionBounce 0.38s ease-in-out infinite alternate;
+  animation: driveAcrossScreen 11s linear infinite;
   will-change: transform;
   filter: drop-shadow(0 14px 20px rgba(0, 0, 0, 0.9));
   /* GPU layer promotion for smooth compositing */
@@ -2072,7 +2072,21 @@ h5 { font-size: var(--text-base); font-weight: 600; }
 }
 
 .bus-turbo {
-  animation: driveAcrossScreen 4s linear infinite, busSuspensionBounce 0.18s ease-in-out infinite alternate !important;
+  animation: driveAcrossScreen 4.2s linear infinite !important;
+}
+
+/* Bus Chassis & Suspension (Bounces inside the driving container) */
+.bus-chassis-bounce {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  animation: busSuspensionBounce 0.38s ease-in-out infinite alternate;
+  will-change: transform;
+  transform-origin: center bottom;
+}
+
+.bus-turbo .bus-chassis-bounce {
+  animation: busSuspensionBounce 0.18s ease-in-out infinite alternate !important;
 }
 
 /* Dynamic Ground Shadow underneath bus */
@@ -2095,23 +2109,23 @@ h5 { font-size: var(--text-base); font-weight: 600; }
   100% { transform: scale(1.05); opacity: 0.95; }
 }
 
-/* Driving Keyframe — uses translateX for GPU compositing instead of left */
+/* Driving Keyframe — uses translateX for GPU compositing across entire screen */
 @keyframes driveAcrossScreen {
   0% {
-    transform: translateX(-280px) translateY(0) rotate(0deg);
+    transform: translate3d(-280px, 0, 0);
   }
   100% {
-    transform: translateX(calc(100vw + 80px)) translateY(0) rotate(0deg);
+    transform: translate3d(calc(100vw + 100px), 0, 0);
   }
 }
 
 /* Suspension Bouncing */
 @keyframes busSuspensionBounce {
   0% {
-    transform: translateY(0) rotate(0deg);
+    transform: translate3d(0, 0, 0) rotate(0deg);
   }
   100% {
-    transform: translateY(-4px) rotate(0.4deg);
+    transform: translate3d(0, -3.5px, 0) rotate(0.35deg);
   }
 }
 
@@ -2148,6 +2162,18 @@ h5 { font-size: var(--text-base); font-weight: 600; }
   transform-origin: center;
   will-change: transform;
   backface-visibility: hidden;
+}
+
+.bus-wheel-rear {
+  transform-origin: 75px 120px;
+}
+
+.bus-wheel-front {
+  transform-origin: 260px 120px;
+}
+
+.bus-turbo .bus-wheel {
+  animation-duration: 0.18s;
 }
 
 @keyframes spinWheel {

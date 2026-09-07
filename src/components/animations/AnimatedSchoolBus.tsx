@@ -38,21 +38,23 @@ export default function AnimatedSchoolBus() {
 
       {/* Moving Bus Container */}
       <div className={`driving-bus-container ${honked ? 'bus-turbo' : ''}`}>
-        {/* Honk Speech Bubble */}
-        {honked && (
-          <div className="bus-honk-bubble animate-bounce">
-            📢 BEEP BEEP! 🚌 ✨
-          </div>
-        )}
-
-        {/* Volumetric Headlight Light Beam shining forward */}
-        <div className="bus-headlight-beam" />
-
         {/* Dynamic Ground Shadow */}
         <div className="bus-ground-shadow" />
 
-        {/* Detailed SVG School Bus */}
-        <svg
+        {/* Chassis Suspension Bounce Unit */}
+        <div className="bus-chassis-bounce">
+          {/* Honk Speech Bubble */}
+          {honked && (
+            <div className="bus-honk-bubble animate-bounce">
+              📢 BEEP BEEP! 🚌 ✨
+            </div>
+          )}
+
+          {/* Volumetric Headlight Light Beam shining forward */}
+          <div className="bus-headlight-beam" />
+
+          {/* Detailed SVG School Bus */}
+          <svg
           viewBox="0 0 320 160"
           className="school-bus-svg"
           xmlns="http://www.w3.org/2000/svg"
@@ -198,7 +200,7 @@ export default function AnimatedSchoolBus() {
           <circle cx="260" cy="120" r="26" fill="#0A0806" />
 
           {/* Back Wheel (Spinning) */}
-          <g className="bus-wheel">
+          <g className="bus-wheel bus-wheel-rear">
             <circle cx="75" cy="120" r="23" fill="#1E293B" stroke="#334155" strokeWidth="4" />
             <circle cx="75" cy="120" r="14" fill="url(#rimGrad)" />
             <circle cx="75" cy="120" r="6" fill="#020617" />
@@ -208,7 +210,7 @@ export default function AnimatedSchoolBus() {
           </g>
 
           {/* Front Wheel (Spinning) */}
-          <g className="bus-wheel">
+          <g className="bus-wheel bus-wheel-front">
             <circle cx="260" cy="120" r="23" fill="#1E293B" stroke="#334155" strokeWidth="4" />
             <circle cx="260" cy="120" r="14" fill="url(#rimGrad)" />
             <circle cx="260" cy="120" r="6" fill="#020617" />
@@ -218,6 +220,7 @@ export default function AnimatedSchoolBus() {
           </g>
         </svg>
       </div>
+    </div>
 
       {/* Road / Asphalt Highway Line with animated dashed markings */}
       <div className="bus-road-surface">
